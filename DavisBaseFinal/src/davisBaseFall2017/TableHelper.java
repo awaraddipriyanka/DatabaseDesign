@@ -154,9 +154,27 @@ public class TableHelper {
 
 		String newTableDataName = currentSchemaName + "." + tblName + ".tbl";
 		RandomAccessFile newTableDataFile = new RandomAccessFile(newTableDataName, "rw");
-		newTableDataFile.close();
+		writeTableToFile(newTableDataFile);
 		return queryFailed;
 	}
+
+	public void writeTableToFile(RandomAccessFile file) {
+	    try {
+
+            for (Map.Entry<Integer, List<String>> oMEntry : TableSchemaManager.ordMap.entrySet()) {
+                String integer = String.valueOf(oMEntry.getValue().size());
+                file.writeByte(integer.length());
+                file.writeBytes(integer);
+                for (String col : oMEntry.getValue()) {
+                    file.writeByte(col.length());
+                    file.writeBytes(col);
+                }
+            }
+            file.close();
+        } catch (IOException ioe) {
+	        ioe.printStackTrace();
+        }
+    }
 
 	
 	public boolean updateInformationSchemaTable(){

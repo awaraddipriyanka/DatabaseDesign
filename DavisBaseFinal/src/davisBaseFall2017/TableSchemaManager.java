@@ -1,5 +1,8 @@
 package davisBaseFall2017;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.TreeMap;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,7 +23,7 @@ public class TableSchemaManager {
 
 	public static TableSchemaManager getInstance(){
 		if ( instance == null)
-			return new TableSchemaManager();
+			instance = new TableSchemaManager();
 		return instance;
 	}
 	public void newTableSchema(
@@ -59,6 +62,7 @@ public class TableSchemaManager {
 
 	public int getTblDeg(String schemaName, String tableName){
 		int degree = 0;
+		getTableSchema(schemaName, tableName);
 		Set<Map.Entry<String,TreeMap<String,TreeMap<Integer,List<String>>>>> tableSchemaSet = tableSchemaMap.entrySet();
 		Iterator<Map.Entry<String,TreeMap<String,TreeMap<Integer,List<String>>>>> tableSchemaIterator = tableSchemaSet.iterator();
 
@@ -90,6 +94,37 @@ public class TableSchemaManager {
 		}
 		return degree;
 	}
+
+	public void getTableSchema(String schemaName, String tableName) {
+	    try {
+            RandomAccessFile tableSchemaFile = new RandomAccessFile(schemaName + "." + tableName + ".tbl", "rw");
+            ordMap = new TreeMap<Integer, List<String>>();
+            int currColumn = 1;
+            while(tableSchemaFile.getFilePointer() < tableSchemaFile.length()) {
+                List<String> columns = new ArrayList<>();
+                String colNum = "";
+                byte length = tableSchemaFile.readByte();
+                for(int j = 0; j < length; j++)
+                    colNum += (char)tableSchemaFile.readByte();
+                int cols = Integer.parseInt(colNum);
+                for (int i =0; i<cols; i++) {
+                    String col = "";
+                    length = tableSchemaFile.readByte();
+                    for(int j = 0; j < length; j++)
+                        col += (char)tableSchemaFile.readByte();
+                    columns.add(col);
+                }
+                ordMap.put(currColumn, columns);
+                currColumn++;
+            }
+            tableMap.put(tableName, ordMap);
+            tableSchemaMap.put(schemaName, tableMap);
+        } catch (FileNotFoundException fnfe) {
+	        fnfe.printStackTrace();
+        } catch (IOException ioe) {
+	        ioe.printStackTrace();
+        }
+    }
 
 	
 	public TreeMap<Integer,List<String>> getColumnSchema(String schemaName, String tableName){

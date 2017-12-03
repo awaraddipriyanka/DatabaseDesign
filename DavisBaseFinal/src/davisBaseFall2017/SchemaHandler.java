@@ -15,7 +15,7 @@ public class SchemaHandler{
 
 	public static SchemaHandler getInstance(){
 		if(instance == null)
-			return new SchemaHandler();
+			instance = new SchemaHandler();
 
 		return instance;
 	}
